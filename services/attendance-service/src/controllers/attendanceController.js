@@ -93,7 +93,7 @@ const getTodayAttendance = async (req, res) => {
       records.map(async (att) => {
         if (att.clock_in && !att.clock_out) {
           const clockInTime = new Date(att.clock_in);
-          const workedHours = (new Date() - clockInTime) / 1000 / 60 / 60; // hours
+          const workedHours = (new Date() - clockInTime) / 1000 / 60 / 60; 
 
           if (workedHours >= 8 && att.status !== "present") {
             att.status = "present";
@@ -183,9 +183,8 @@ const getAttendanceFiltered = async (req, res) => {
  const getTodayAttendanceByEmployee = async (req, res) => {
   try {
     const { employeeId } = req.params;
-    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+    const today = new Date().toISOString().split("T")[0]; 
 
-    // Find attendance for this employee today
     const attendance = await Attendance.findOne({
       where: {
         employee_id: employeeId,
@@ -193,7 +192,7 @@ const getAttendanceFiltered = async (req, res) => {
       },
     });
 
-    res.json(attendance || null); // return null if no record
+    res.json(attendance || null); 
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });

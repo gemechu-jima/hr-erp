@@ -99,7 +99,7 @@ export default function AttendanceForm({ profile }) {
       <div className="flex justify-between space-x-4">
         <button
           onClick={handleClockIn}
-          disabled={loading || !!attendance?.clock_in} // disable if already clocked in
+          disabled={loading || !!attendance?.clock_in} 
           className={`flex-1 py-2 rounded ${
             attendance?.clock_in
               ? "bg-gray-400 cursor-not-allowed"
@@ -111,7 +111,7 @@ export default function AttendanceForm({ profile }) {
 
         <button
           onClick={handleClockOut}
-          disabled={loading || !attendance?.clock_in || !!attendance?.clock_out} // disable if not clocked in or already clocked out
+          disabled={loading || !attendance?.clock_in || !!attendance?.clock_out} 
           className={`flex-1 py-2 rounded ${
             !attendance?.clock_in || attendance?.clock_out
               ? "bg-gray-400 cursor-not-allowed"
