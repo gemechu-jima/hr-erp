@@ -2,9 +2,10 @@ const Attendance = require('../models/attendanceModel.js');
 const { Op } = require("sequelize");
 const markAttendance = async (req, res) => {
   try {
-    const { employee_id, clock_date, shift_start } = req.body;
+    const { employee_id, clock_date, clock_in, shift_start, status } = req.body;
+
     const existing = await Attendance.findOne({
-      where: { employee_id, clock_date }
+      where: { clock_date }
     });
 
     if (existing) {
@@ -12,13 +13,16 @@ const markAttendance = async (req, res) => {
         message: 'Attendance already marked for this date'
       });
     }
-const shiftStartTime = new Date(shift_start).toTimeString().split(' ')[0];
+    const shiftStartTime = shift_start
+      ? new Date(shift_start).toTimeString().split(' ')[0]
+      : null;
+
     const attendance = await Attendance.create({
       employee_id,
       clock_date,
-      clock_in: new Date(),
-      shift_start:shiftStartTime,
-      status: 'present'
+      clock_in: clock_in ? new Date(clock_in) : new Date(),
+      shift_start: shiftStartTime,
+      status: status || 'present'
     });
 
     res.status(201).json({
@@ -176,9 +180,28 @@ const getAttendanceFiltered = async (req, res) => {
   }
 };
 
+ const getTodayAttendanceByEmployee = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
 
+    // Find attendance for this employee today
+    const attendance = await Attendance.findOne({
+      where: {
+        employee_id: employeeId,
+        clock_date: today,
+      },
+    });
+
+    res.json(attendance || null); // return null if no record
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: err.message });
+  }
+};
 
 module.exports = {
+  getTodayAttendanceByEmployee,
   getAttendanceFiltered,
   deleteAttendance,
   getAttendance,

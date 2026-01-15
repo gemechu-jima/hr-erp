@@ -12,5 +12,6 @@ router.get('/employee/:employee_id', attendanceController.getAttendanceByEmploye
 router.delete("/:id", attendanceController.deleteAttendance);
 router.get('/filter', attendanceController.getAttendanceFiltered);
 router.get('/export/excel', geneatereport.exportAttendanceExcel);
+router.get('/employee/today/:employeeId', attendanceController.getTodayAttendanceByEmployee);
 
 module.exports = router;
