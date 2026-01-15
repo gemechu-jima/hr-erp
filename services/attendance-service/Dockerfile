@@ -4,14 +4,9 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 RUN npm ci --only=production
-
-
 COPY . .
-
 ENV NODE_ENV=production
 EXPOSE 3004
-
-
 CMD ["node", "server.js"]
 FROM node:18-alpine
 
@@ -24,5 +19,4 @@ RUN npm install
 COPY . .
 
 EXPOSE 3004
-
 CMD ["npm", "start"]
