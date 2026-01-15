@@ -1,18 +1,41 @@
 const express = require('express');
 const app = express();
-const orgStructureRoutes = require('./src/routes/orgStructureRoutes');
+const cors = require('cors');
+const sequelize = require('./src/config/db');
+const initializeDatabase = require('./src/config/initDb');
 require('dotenv').config();
-
+const HOST = '127.0.0.1';
 const PORT = process.env.PORT || 3001;
+const departmentRoutes = require('./src/routes/departmentRoutes.js');
+const jobCategoryRoutes = require('./src/routes/jobCategoryRoutes.js');
 
+app.use(cors());
 app.use(express.json());
 
-app.use('/api/orgStructure', orgStructureRoutes);
-
 app.get('/', (req, res) => {
-  res.send('org-structure-service is running');
+  res.send('Organization Service is running');
 });
 
-app.listen(PORT, () => {
-  console.log(`org-structure-service running on port ${PORT}`);
-});
+
+app.use('/api/organization/departments', departmentRoutes);
+app.use('/api/organization/job-categories', jobCategoryRoutes);
+
+async function startServer() {
+  try {
+
+    await initializeDatabase();
+    console.log('Database created/verified successfully');
+
+    await sequelize.sync({ alter: true });
+    console.log('Database synced successfully');
+
+    app.listen(PORT, HOST, () => {
+      console.log(`Organization Service running on http://${HOST}:${PORT}`);
+    });
+  } catch (error) {
+    console.error('Unable to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

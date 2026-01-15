@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const AuthUser = require('../models/userModel');
+const sequelize = require('../config/db');
+const { Op } = require('sequelize');
 
 exports.register = async (req, res) => {
     try {
@@ -79,6 +81,83 @@ exports.login = async (req, res) => {
                 first_name: user.first_name,
                 last_name: user.last_name
             }
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+exports.getUsers = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, search = '', role = '' } = req.query;
+        const offset = (page - 1) * limit;
+
+        const whereClause = {};
+
+        if (search) {
+            whereClause[Op.or] = [
+                { first_name: { [Op.like]: `%${search}%` } },
+                { last_name: { [Op.like]: `%${search}%` } },
+                { email: { [Op.like]: `%${search}%` } }
+            ];
+        }
+
+        if (role) {
+            whereClause.role = role;
+        }
+
+        const { count, rows } = await AuthUser.findAndCountAll({
+            where: whereClause,
+            attributes: { exclude: ['password_hash'] },
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            order: [['created_at', 'DESC']]
+        });
+
+        res.status(200).json({
+            users: rows,
+            pagination: {
+                total: count,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(count / limit)
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+exports.getStats = async (req, res) => {
+    try {
+        const totalUsers = await AuthUser.count();
+        const activeUsers = await AuthUser.count({ where: { is_active: true } });
+
+        const roleDistribution = await AuthUser.findAll({
+            attributes: ['role', [sequelize.fn('COUNT', sequelize.col('role')), 'count']],
+            group: ['role']
+        });
+
+        // New users in last 7 days
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const recentRegistrations = await AuthUser.findAll({
+            where: {
+                created_at: { [Op.gte]: sevenDaysAgo }
+            },
+            attributes: [
+                [sequelize.fn('DATE', sequelize.col('created_at')), 'date'],
+                [sequelize.fn('COUNT', sequelize.col('id')), 'count']
+            ],
+            group: [sequelize.fn('DATE', sequelize.col('created_at'))],
+            order: [[sequelize.fn('DATE', sequelize.col('created_at')), 'ASC']]
+        });
+
+        res.status(200).json({
+            totalUsers,
+            activeUsers,
+            roleDistribution,
+            recentRegistrations
         });
     } catch (error) {
         res.status(500).json({ message: 'Server error', error: error.message });

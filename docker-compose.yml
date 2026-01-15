@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: hr-erp-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: hr_erp
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "3307:3306"  # Changed to 3307 to avoid conflict with local MySQL
+    networks:
+      - hr-erp-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Auth Service
+  auth-service:
+    build:
+      context: ./services/auth-service
+      dockerfile: Dockerfile
+    container_name: hr-erp-auth
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASSWORD=${DB_ROOT_PASSWORD:-root_password}
+      - DB_NAME=hr_erp
+      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret_change_in_production}
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - hr-erp-network
+    restart: unless-stopped
+
+  # Recruitment Service
+  recruitment-service:
+    build:
+      context: ./services/recruitment-service
+      dockerfile: Dockerfile
+    container_name: hr-erp-recruitment
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASSWORD=${DB_ROOT_PASSWORD:-root_password}
+      - DB_NAME=hr_erp
+      - JWT_SECRET=${JWT_SECRET:-your_jwt_secret_change_in_production}
+      - PORT=3002
+    ports:
+      - "3002:3002"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - hr-erp-network
+    restart: unless-stopped
+
+  # Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: hr-erp-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - auth-service
+      - recruitment-service
+    networks:
+      - hr-erp-network
+    restart: unless-stopped
+
+networks:
+  hr-erp-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local

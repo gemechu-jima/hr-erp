@@ -1,16 +1,1 @@
-module.exports = {
-    development: {
-        host: process.env.DB_HOST || 'localhost',
-        user: process.env.DB_USER || 'root',
-        password: process.env.DB_PASSWORD || 'password',
-        database: process.env.DB_NAME || 'hr_erp',
-        dialect: 'mysql'
-    },
-    production: {
-        host: process.env.DB_HOST,
-        user: process.env.DB_USER,
-        password: process.env.DB_PASSWORD,
-        database: process.env.DB_NAME,
-        dialect: 'mysql'
-    }
-};
+specifically in the services/leave-services project create an API end point based on the existing models. Where an employee could request or rerequest one more time cancel request for leave. So now As you can see there is no employee in this project so what

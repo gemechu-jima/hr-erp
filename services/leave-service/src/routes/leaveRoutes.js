@@ -1,8 +1,19 @@
-const express = require('express');
+import { getAllPendingLeaveRequests, createLeaveRequest, getMyRequests } from '../controllers/leaveController.js';
+import authMiddleware from '../middleware/authMiddleware.js';
+import express from 'express';
+
 const router = express.Router();
-const authController = require('../controllers/authController');
+router.use(authMiddleware);
 
-router.post('/login', authController.login);
-router.post('/register', authController.register);
+router.post('/', createLeaveRequest);
+router.get('/my', getMyRequests);
+router.get('/', getAllPendingLeaveRequests); // Mapping root GET to pending for now to match current usage
+router.get('/getAllPending', getAllPendingLeaveRequests);
 
-module.exports = router;
+// router.post('/', createLeaveRequest);
+// router.get('/', getMyRequests);
+// router.put('/:id', updateLeaveRequest);
+// router.put('/:id/cancel', cancelLeaveRequest);
+// router.put("/getAllPending", getAllPendingLeaveRequests)
+// router.put("/", (req, res)=>{ return "Hello There!"; })
+export default router;
