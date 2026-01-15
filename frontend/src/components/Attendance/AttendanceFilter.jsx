@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 
-export default function AttendanceFilter({ onFilter }) {
+export default function AttendanceFilter({ onFilter , byEmploye}) {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [employeeId, setEmployeeId] = useState('');
   const handleFilter = () => {
     onFilter({ startDate, endDate, employeeId });
   };
+const handleByEmployee = () => {
+  byEmploye(employeeId);
+};
 
   return (
     <div className="bg-white shadow-md rounded-lg p-4 space-y-4">
@@ -39,12 +42,21 @@ export default function AttendanceFilter({ onFilter }) {
           className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:ring focus:ring-blue-300"
         />
       </div>
-      <button
+      <div className='flex gap-10'>
+ <button
         onClick={handleFilter}
         className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600"
       >
         Apply Filter
       </button>
+      <button
+        onClick={handleByEmployee}
+        className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600"
+      >
+        Filter by Employee
+      </button>
+      </div>
+     
     </div>
   );
 }

@@ -14,12 +14,11 @@ export default function AttendanceForm({ profile }) {
 
   const getTodayDate = () => new Date().toISOString().split("T")[0];
 
-  // Fetch today’s attendance for this employee
   useEffect(() => {
     const fetchTodayAttendance = async () => {
       try {
         const res = await api.get(`/attendance/employee/today/${profile.id}`);
-        setAttendance(res.data); // null if not exists
+        setAttendance(res.data); 
       } catch (err) {
         console.error("Error fetching today attendance:", err);
       }
@@ -62,8 +61,6 @@ export default function AttendanceForm({ profile }) {
 
     try {
       const nowISO = new Date().toISOString();
-
-      // Calculate hours worked
       const clockInTime = new Date(attendance.clock_in);
       const workedHours = (new Date() - clockInTime) / (1000 * 60 * 60); // ms → hours
 

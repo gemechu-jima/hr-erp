@@ -62,10 +62,17 @@ const handleDelete = async (attendanceId) => {
   }
 };
 
-
+const fetchAllAttendanceByEmployee = async (employeeId) => {
+  try {
+    const res = await api.get(`/attendance//employee/${employeeId}`);
+    setAttendances(res.data);
+  } catch (err) {
+    console.error("Error fetching attendance by employee:", err);
+  }
+};
   return (
     <div className="overflow-x-auto space-y-4">
-      <AttendanceFilter onFilter={fetchFilteredAttendance} />
+      <AttendanceFilter onFilter={fetchFilteredAttendance} byEmploye={fetchAllAttendanceByEmployee} />
 
       <div className="flex items-center space-x-3">
         <input
