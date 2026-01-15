@@ -63,7 +63,16 @@ services:
     networks:
       - hr-erp-network
     restart: unless-stopped
-
+  services:
+  attendance:
+    build: ./services/attendance-service
+    image: hr-erp-attendance:latest
+    container_name: attendance-service
+    ports:
+      - "3004:3004"
+    env_file:
+      - ./services/attendance-service/.env
+    restart: unless-stopped
   # Frontend
   frontend:
     build:
