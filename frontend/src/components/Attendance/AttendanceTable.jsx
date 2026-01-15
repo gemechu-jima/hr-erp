@@ -1,42 +1,42 @@
 import React, { useEffect, useState } from "react";
 import AttendanceFilter from "./AttendanceFilter";
 import axios from "axios";
+
 const api = axios.create({
   baseURL: "http://localhost:3004/api",
 });
+
 export default function AttendanceTable() {
   const [attendances, setAttendances] = useState([]);
-  const [attendance, setAttendance] = useState();
   const [date, setDate] = useState("");
+
   useEffect(() => {
-    const fetchAttendance = async () => {
-      try {
-        const res = await axios.get("http://localhost:3004/api/attendance");
-        setAttendances(res.data);
-      } catch (err) {
-        console.error("Error fetching attendance:", err);
-      }
-    };
-
-    fetchAttendance();
+    fetchAllAttendance();
   }, []);
-  const fetchAttendanceByDate = async () => {
-    if (!date) return;
 
+  const fetchAllAttendance = async () => {
     try {
-      const res = await api.get(`/attendance`, {
-        params: { date },
-      });
+      const res = await api.get("/attendance");
       setAttendances(res.data);
     } catch (err) {
       console.error("Error fetching attendance:", err);
     }
   };
-  const fetchFilteredAttendance = async ({
-    startDate,
-    endDate,
-    employeeId,
-  }) => {
+
+ const fetchAttendanceByDate = async () => {
+  if (!date) return;
+  try {
+    const res = await api.get("/attendance/date", {
+      params: { date },
+    });
+    setAttendances(res.data);
+  } catch (err) {
+    console.error("Error fetching attendance:", err);
+  }
+};
+
+
+  const fetchFilteredAttendance = async ({ startDate, endDate, employeeId }) => {
     try {
       const res = await api.get("/attendance/filter", {
         params: { startDate, endDate, employeeId },
@@ -47,17 +47,14 @@ export default function AttendanceTable() {
     }
   };
 
-  useEffect(() => {
-    fetchAttendanceByDate();
-  }, [date, attendance]);
   const handleDelete = async (attendanceId) => {
     try {
       await api.delete(`/attendance/${attendanceId}`);
-      alert("Attendance deleted successfully");
-      setAttendance(null);
-      fetchAttendanceByDate();
+      setAttendances((prev) =>
+        prev.filter((att) => att.id !== attendanceId)
+      );
     } catch (err) {
-      console.error("Delete error:", err.response?.data || err.message);
+      console.error("Delete error:", err);
       alert("Failed to delete attendance.");
     }
   };
@@ -71,72 +68,61 @@ export default function AttendanceTable() {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          className="border rounded-md px-3 py-2"
         />
         <button
           onClick={fetchAttendanceByDate}
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition"
+          className="bg-blue-500 text-white px-4 py-2 rounded"
         >
           Search
         </button>
+        <button
+          onClick={fetchAllAttendance}
+          className="bg-gray-500 text-white px-4 py-2 rounded"
+        >
+          Reset
+        </button>
       </div>
 
-      <table className="min-w-full border border-gray-200 shadow-md rounded-lg">
+      <table className="min-w-full border shadow-md">
         <thead className="bg-gray-100">
           <tr>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-              Employee
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-              Clock In
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-              Clock Out
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-              Date
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-              Status
-            </th>
-            <th className="px-4 py-2 text-left text-sm font-semibold text-gray-700">
-              Actions
-            </th>
+            <th className="px-4 py-2">Employee</th>
+            <th className="px-4 py-2">Clock In</th>
+            <th className="px-4 py-2">Clock Out</th>
+            <th className="px-4 py-2">Date</th>
+            <th className="px-4 py-2">Status</th>
+            <th className="px-4 py-2">Actions</th>
           </tr>
         </thead>
         <tbody>
           {attendances.map((att) => (
-            <tr key={att.id} className="border-t hover:bg-gray-50">
+            <tr key={att.id} className="border-t">
               <td className="px-4 py-2">{att.employee_id}</td>
               <td className="px-4 py-2">
                 {att.clock_in
-                  ? new Date(att.clock_in).toISOString().slice(0, 19)
+                  ? new Date(att.clock_in).toLocaleTimeString()
                   : "-"}
               </td>
               <td className="px-4 py-2">
                 {att.clock_out
-                  ? new Date(att.clock_out).toISOString().slice(0, 19)
+                  ? new Date(att.clock_out).toLocaleTimeString()
                   : "-"}
               </td>
               <td className="px-4 py-2">{att.clock_date}</td>
               <td className="px-4 py-2">
-                {(() => {
-                  if (!att.clock_in) return "-";
-                  if (!att.clock_out) {
-                    const clockInTime = new Date(att.clock_in);
-                    const now = new Date();
-                    const hoursWorked = (now - clockInTime) / (1000 * 60 * 60);
-                    if (hoursWorked >= 8) return "Missed";
-                    return att.status;
-                  }
-                  return att.status;
-                })()}
+                {!att.clock_out &&
+                att.clock_in &&
+                (new Date() - new Date(att.clock_in)) /
+                  (1000 * 60 * 60) >=
+                  8
+                  ? "Missed"
+                  : att.status}
               </td>
-
               <td className="px-4 py-2">
                 <button
                   onClick={() => handleDelete(att.id)}
-                  className="text-red-500 hover:text-red-700"
+                  className="text-red-500"
                 >
                   Delete
                 </button>
@@ -148,5 +134,3 @@ export default function AttendanceTable() {
     </div>
   );
 }
-
-//{id: 1, employee_id: 101, clock_date: '2026-01-14', clock_in: '2026-01-14T10:03:37.000Z', clock_in: '2026-01-14T13:24:41.000Z', …}

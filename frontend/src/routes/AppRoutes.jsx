@@ -60,6 +60,7 @@ const AppRoutes = () => {
                 <Route path="/hr/employees" element={<RoleBasedRoute allowedRoles={[ROLES.HR]}><Employees /></RoleBasedRoute>} />
                 <Route path="/hr/recruitment" element={<RoleBasedRoute allowedRoles={[ROLES.HR]}><Recruitment /></RoleBasedRoute>} />
                 <Route path="/hr/leave" element={<RoleBasedRoute allowedRoles={[ROLES.HR]}><LeaveManagement /></RoleBasedRoute>} />
+                <Route path="/hr/attendance" element={<RoleBasedRoute allowedRoles={[ROLES.HR]}><Attendance /></RoleBasedRoute>} />
 
                 <Route path="/manager" element={<RoleBasedRoute allowedRoles={[ROLES.MANAGER]}><Navigate to="/manager/dashboard" /></RoleBasedRoute>} />
                 <Route path="/manager/dashboard" element={<RoleBasedRoute allowedRoles={[ROLES.MANAGER]}><ManagerDashboard /></RoleBasedRoute>} />

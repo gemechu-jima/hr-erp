@@ -8,14 +8,13 @@ const api = axios.create({
 export default function AttendanceForm({ profile = { id: 10 } }) {
   const [attendance, setAttendance] = useState(null);
   const [loading, setLoading] = useState(false);
-
   const shiftStart = "08:00 AM";
-  const shiftEnd = "04:00 PM";
-
+  const shiftEnd = "05:00 PM";
+  console.log("AttendanceForm profile:", attendance);
   const getTodayDate = () => new Date().toISOString().split("T")[0];
   const fetchTodayAttendance = async () => {
     try {
-      const res = await api.get(`attendance/employee/${profile.id}`);
+      const res = await api.get(`/attendance/employee/${profile.id}`);
       if (res.data.length > 0) {
         setAttendance(res.data[0]);
       }
@@ -59,10 +58,8 @@ export default function AttendanceForm({ profile = { id: 10 } }) {
     }
   };
 
-  // Clock Out
   const handleClockOut = async () => {
     if (loading || !attendance?.clock_in || attendance?.clock_out) return;
-
     setLoading(true);
     try {
       const now = new Date();
@@ -76,7 +73,6 @@ export default function AttendanceForm({ profile = { id: 10 } }) {
       if (workedHours < 8) {
         updatedStatus = "late";
       }
-
       const payload = {
         employee_id: profile.id,
         clock_date: getTodayDate(),
@@ -88,7 +84,6 @@ export default function AttendanceForm({ profile = { id: 10 } }) {
         `/attendance/clockout/${attendance.id}`,
         payload
       );
-
       setAttendance((prev) => ({
         ...prev,
         clock_out: nowISO,
@@ -101,7 +96,11 @@ export default function AttendanceForm({ profile = { id: 10 } }) {
       setLoading(false);
     }
   };
-
+  const isToday = (date) => {
+    if (!date) return false;
+    const today = new Date().toISOString().split("T")[0];
+    return date === today;
+  };
   return (
     <div className="w-full  mx-auto bg-white shadow-md rounded-lg p-6 space-y-4">
       <h2 className="text-xl font-bold text-gray-700">Attendance Form</h2>
@@ -112,7 +111,7 @@ export default function AttendanceForm({ profile = { id: 10 } }) {
       <div className="flex justify-between space-x-4">
         <button
           onClick={handleClockIn}
-          disabled={loading || !!attendance?.clock_in}
+          disabled={loading || attendance?.clock_in}
           className={`flex-1 py-2 rounded ${
             attendance?.clock_in
               ? "bg-gray-400 cursor-not-allowed"
@@ -121,11 +120,19 @@ export default function AttendanceForm({ profile = { id: 10 } }) {
         >
           {attendance?.clock_in ? "Already Clocked In" : "Clock In"}
         </button>
+
         <button
           onClick={handleClockOut}
-          disabled={loading || !attendance?.clock_in || !!attendance?.clock_out}
+          disabled={
+            loading ||
+            !attendance?.clock_in ||
+            attendance?.clock_out ||
+            !isToday(attendance?.clock_date)
+          }
           className={`flex-1 py-2 rounded ${
-            !attendance?.clock_in || attendance?.clock_out
+            !attendance?.clock_in ||
+            attendance?.clock_out ||
+            !isToday(attendance?.clock_date)
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-red-500 hover:bg-red-600 text-white"
           }`}

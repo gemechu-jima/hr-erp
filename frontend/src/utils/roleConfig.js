@@ -24,6 +24,7 @@ export const NAVIGATION_CONFIG = {
         { path: '/hr/employees', label: 'Employees', icon: 'users' },
         { path: '/hr/recruitment', label: 'Recruitment', icon: 'recruitment' },
         { path: '/hr/leave', label: 'Leave Management', icon: 'leave' },
+        { path: '/hr/attendance', label: 'Attendance', icon: 'attendance' },
     ],
     [ROLES.MANAGER]: [
         { path: '/manager/dashboard', label: 'Dashboard', icon: 'dashboard' },
