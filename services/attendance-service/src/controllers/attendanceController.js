@@ -1,5 +1,5 @@
 const Attendance = require('../models/attendanceModel.js');
-
+const { Op } = require("sequelize");
 const markAttendance = async (req, res) => {
   try {
     const { employee_id, clock_date, shift_start } = req.body;
@@ -140,21 +140,30 @@ const deleteAttendance = async (req, res) => {
 };
 
 
- const getAttendanceFiltered = async (req, res) => {
+const getAttendanceFiltered = async (req, res) => {
   try {
     const { startDate, endDate, employeeId } = req.query;
+
     const whereClause = {};
-    if (employeeId) whereClause.employee_id = employeeId;
+
+    if (employeeId) {
+      whereClause.employee_id = employeeId;
+    }
+
     if (startDate && endDate) {
       whereClause.clock_date = {
-        $gte: startDate,
-        $lte: endDate,
+        [Op.between]: [startDate, endDate],
       };
     } else if (startDate) {
-      whereClause.clock_date = startDate;
+      whereClause.clock_date = {
+        [Op.gte]: startDate,
+      };
     } else if (endDate) {
-      whereClause.clock_date = endDate;
+      whereClause.clock_date = {
+        [Op.lte]: endDate,
+      };
     }
+
     const records = await Attendance.findAll({
       where: whereClause,
       order: [["clock_date", "ASC"], ["clock_in", "ASC"]],

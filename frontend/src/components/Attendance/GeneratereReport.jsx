@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: "http://localhost:3004/api",
 });
 
-
 export default function GeneratereReport({ date }) {
     const downloadExcel = async () => {
   try {
