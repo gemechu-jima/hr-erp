@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import AttendanceFilter from "./AttendanceFilter";
 import axios from "axios";
-
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
+import GeneratereReport from "./GeneratereReport";
 const api = axios.create({
   baseURL: "http://localhost:3004/api",
 });
 
-export default function AttendanceTable() {
+export default function AttendanceTable({ date, setDate }) {
   const [attendances, setAttendances] = useState([]);
-  const [date, setDate] = useState("");
 
   useEffect(() => {
     fetchAllAttendance();
@@ -47,17 +48,20 @@ export default function AttendanceTable() {
     }
   };
 
-  const handleDelete = async (attendanceId) => {
-    try {
-      await api.delete(`/attendance/${attendanceId}`);
-      setAttendances((prev) =>
-        prev.filter((att) => att.id !== attendanceId)
-      );
-    } catch (err) {
-      console.error("Delete error:", err);
-      alert("Failed to delete attendance.");
+const handleDelete = async (attendanceId) => {
+  try {
+    await api.delete(`/attendance/${attendanceId}`);
+    if (date) {
+      fetchAttendanceByDate();
+    } else {
+      fetchAllAttendance();
     }
-  };
+  } catch (err) {
+    console.error("Delete error:", err);
+    alert("Failed to delete attendance.");
+  }
+};
+
 
   return (
     <div className="overflow-x-auto space-y-4">
@@ -82,6 +86,7 @@ export default function AttendanceTable() {
         >
           Reset
         </button>
+        <GeneratereReport date={date} />
       </div>
 
       <table className="min-w-full border shadow-md">
@@ -120,12 +125,18 @@ export default function AttendanceTable() {
                   : att.status}
               </td>
               <td className="px-4 py-2">
-                <button
-                  onClick={() => handleDelete(att.id)}
-                  className="text-red-500"
-                >
-                  Delete
-                </button>
+
+
+
+
+<IconButton
+  aria-label="delete"
+  color="error"
+  onClick={() => handleDelete(att.id)}
+>
+  <DeleteIcon />
+</IconButton>
+
               </td>
             </tr>
           ))}

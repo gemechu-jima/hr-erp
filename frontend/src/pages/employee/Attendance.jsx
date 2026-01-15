@@ -1,8 +1,11 @@
-﻿import AttendanceTable from "../../components/Attendance/AttendanceTable";
+﻿import React, { useState } from "react";
+import AttendanceTable from "../../components/Attendance/AttendanceTable";
 import AttendanceForm from "../../components/Attendance/AttendanceForm";
 
 
 const Attendance = () => {
+    const [date, setDate] = useState("");
+  
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-3xl font-bold">Attendance</h1>
@@ -10,7 +13,7 @@ const Attendance = () => {
         <AttendanceForm profile={{ id: 107, name: "Abe" }} />
       </div>
       <div className="bg-white p-6 rounded-lg shadow">
-        <AttendanceTable />
+        <AttendanceTable date={date} setDate={setDate} />
       </div>
     </div>
   );

@@ -79,14 +79,13 @@ const getAttendanceByEmployee = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
 const getTodayAttendance = async (req, res) => {
   try {
     const today = new Date().toISOString().split("T")[0];
     const records = await Attendance.findAll({
       where: { clock_date: today },
     });
-  const updatedRecords = await Promise.all(
+     const updatedRecords = await Promise.all(
       records.map(async (att) => {
         if (att.clock_in && !att.clock_out) {
           const clockInTime = new Date(att.clock_in);
@@ -167,6 +166,8 @@ const deleteAttendance = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
 
 module.exports = {
   getAttendanceFiltered,
