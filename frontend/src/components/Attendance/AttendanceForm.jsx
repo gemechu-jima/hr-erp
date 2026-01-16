@@ -55,36 +55,35 @@ export default function AttendanceForm({ profile }) {
     }
   };
 
-  const handleClockOut = async () => {
-    if (loading || !attendance?.clock_in || attendance?.clock_out) return;
-    setLoading(true);
+ const handleClockOut = async () => {
+  if (loading || !attendance || attendance.clock_out) return;
 
-    try {
-      const nowISO = new Date().toISOString();
-      const clockInTime = new Date(attendance.clock_in);
-      const workedHours = (new Date() - clockInTime) / (1000 * 60 * 60); // ms → hours
+  setLoading(true);
+  try {
+    const today = getTodayDate();
+    const nowISO = new Date().toISOString();
 
-      const updatedStatus = workedHours < 8 ? "late" : attendance.status;
+    const payload = {
+      employee_id: profile.id,
+      clock_date: today,
+      clock_out: nowISO,
+    };
 
-      const payload = {
-        clock_out: nowISO,
-        status: updatedStatus,
-      };
+    await api.put("/attendance/clockout", payload);
+    setAttendance((prev) => ({
+      ...prev,
+      clock_out: nowISO,
+      status: prev.status === "late" ? "late" : "present",
+    }));
+    // fetchTodayAttendance();
+  } catch (err) {
+    console.error("Clock-out error:", err.response?.data || err.message);
+    alert("Failed to clock out. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
-      const res = await api.put(`/attendance/clockout/${attendance.id}`, payload);
-
-      setAttendance((prev) => ({
-        ...prev,
-        clock_out: nowISO,
-        status: updatedStatus,
-      }));
-    } catch (err) {
-      console.error("Clock-out error:", err.response?.data || err.message);
-      alert("Failed to clock out. Please try again.");
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="w-full mx-auto bg-white shadow-md rounded-lg p-6 space-y-4">

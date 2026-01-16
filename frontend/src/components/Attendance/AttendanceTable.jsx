@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import AttendanceFilter from "./AttendanceFilter";
 import axios from "axios";
-import IconButton from '@mui/material/IconButton';
-import DeleteIcon from '@mui/icons-material/Delete';
+import IconButton from "@mui/material/IconButton";
+import DeleteIcon from "@mui/icons-material/Delete";
 import GeneratereReport from "./GeneratereReport";
 const api = axios.create({
   baseURL: "http://localhost:3004/api",
@@ -24,20 +24,23 @@ export default function AttendanceTable({ date, setDate }) {
     }
   };
 
- const fetchAttendanceByDate = async () => {
-  if (!date) return;
-  try {
-    const res = await api.get("/attendance/date", {
-      params: { date },
-    });
-    setAttendances(res.data);
-  } catch (err) {
-    console.error("Error fetching attendance:", err);
-  }
-};
+  const fetchAttendanceByDate = async () => {
+    if (!date) return;
+    try {
+      const res = await api.get("/attendance/date", {
+        params: { date },
+      });
+      setAttendances(res.data);
+    } catch (err) {
+      console.error("Error fetching attendance:", err);
+    }
+  };
 
-
-  const fetchFilteredAttendance = async ({ startDate, endDate, employeeId }) => {
+  const fetchFilteredAttendance = async ({
+    startDate,
+    endDate,
+    employeeId,
+  }) => {
     try {
       const res = await api.get("/attendance/filter", {
         params: { startDate, endDate, employeeId },
@@ -48,31 +51,34 @@ export default function AttendanceTable({ date, setDate }) {
     }
   };
 
-const handleDelete = async (attendanceId) => {
-  try {
-    await api.delete(`/attendance/${attendanceId}`);
-    if (date) {
-      fetchAttendanceByDate();
-    } else {
-      fetchAllAttendance();
+  const handleDelete = async (attendanceId) => {
+    try {
+      await api.delete(`/attendance/${attendanceId}`);
+      if (date) {
+        fetchAttendanceByDate();
+      } else {
+        fetchAllAttendance();
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+      alert("Failed to delete attendance.");
     }
-  } catch (err) {
-    console.error("Delete error:", err);
-    alert("Failed to delete attendance.");
-  }
-};
+  };
 
-const fetchAllAttendanceByEmployee = async (employeeId) => {
-  try {
-    const res = await api.get(`/attendance//employee/${employeeId}`);
-    setAttendances(res.data);
-  } catch (err) {
-    console.error("Error fetching attendance by employee:", err);
-  }
-};
+  const fetchAllAttendanceByEmployee = async (employeeId) => {
+    try {
+      const res = await api.get(`/attendance//employee/${employeeId}`);
+      setAttendances(res.data);
+    } catch (err) {
+      console.error("Error fetching attendance by employee:", err);
+    }
+  };
   return (
     <div className="overflow-x-auto space-y-4">
-      <AttendanceFilter onFilter={fetchFilteredAttendance} byEmploye={fetchAllAttendanceByEmployee} />
+      <AttendanceFilter
+        onFilter={fetchFilteredAttendance}
+        byEmploye={fetchAllAttendanceByEmployee}
+      />
 
       <div className="flex items-center space-x-3">
         <input
@@ -125,25 +131,18 @@ const fetchAllAttendanceByEmployee = async (employeeId) => {
               <td className="px-4 py-2">
                 {!att.clock_out &&
                 att.clock_in &&
-                (new Date() - new Date(att.clock_in)) /
-                  (1000 * 60 * 60) >=
-                  8
+                (new Date() - new Date(att.clock_in)) / (1000 * 60 * 60) >= 8
                   ? "Missed"
                   : att.status}
               </td>
               <td className="px-4 py-2">
-
-
-
-
-<IconButton
-  aria-label="delete"
-  color="error"
-  onClick={() => handleDelete(att.id)}
->
-  <DeleteIcon />
-</IconButton>
-
+                <IconButton
+                  aria-label="delete"
+                  color="error"
+                  onClick={() => handleDelete(att.id)}
+                >
+                  <DeleteIcon />
+                </IconButton>
               </td>
             </tr>
           ))}
